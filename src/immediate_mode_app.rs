@@ -7,7 +7,7 @@ pub struct UserInfo {
 }
 
 #[derive(Default)]
-pub struct MyApp {
+pub struct ImmediateModeApp {
     active_tab: Tab,
     show_main_modal: bool,
     show_save_settings_modal: bool,
@@ -25,7 +25,7 @@ pub enum Tab {
     About,
 }
 
-impl eframe::App for MyApp {
+impl eframe::App for ImmediateModeApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         TopBottomPanel::top("top_panel").show(ctx, |ui| {
             ui.horizontal(|ui| {
@@ -43,7 +43,7 @@ impl eframe::App for MyApp {
     }
 }
 
-impl MyApp {
+impl ImmediateModeApp {
     // Layout and content for the "Home" tab
     fn show_home_tab(&mut self, ctx: &egui::Context, ui: &mut egui::Ui) {
         ui.heading("Home Tab");

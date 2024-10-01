@@ -1,9 +1,8 @@
 mod immediate_mode_app;
 
-use immediate_mode_app::{MyApp};
+use immediate_mode_app::{ImmediateModeApp};
 
 // TODOS
-// rename MyApp
 // create common module to reuse structs
 // Add some retained based mode to check its work 
 // add #feature to switch between immediate mode and retained one.
@@ -22,7 +21,7 @@ fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "Complex Egui Example",
         options,
-        Box::new(|_cc| Box::new(MyApp::default())),
+        Box::new(|_cc| Box::new(ImmediateModeApp::default())),
     )
 }
 
