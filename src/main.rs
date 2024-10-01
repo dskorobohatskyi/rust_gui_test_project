@@ -1,10 +1,10 @@
-mod immediate_mode_app;
+mod common;
+mod immediate_mode_app; // TODO check if this is correct approach
 
-use immediate_mode_app::{ImmediateModeApp};
+use immediate_mode_app::ImmediateModeApp;
 
 // TODOS
-// create common module to reuse structs
-// Add some retained based mode to check its work 
+// Add some retained based mode to check its work
 // add #feature to switch between immediate mode and retained one.
 // think about expectations from ui
 // how to change size of fonts, text lines, alignment
@@ -14,8 +14,6 @@ use immediate_mode_app::{ImmediateModeApp};
 
 // TODO setting to not update frame if no input from user + side effect
 
-
-
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions::default();
     eframe::run_native(
@@ -24,4 +22,3 @@ fn main() -> Result<(), eframe::Error> {
         Box::new(|_cc| Box::new(ImmediateModeApp::default())),
     )
 }
-

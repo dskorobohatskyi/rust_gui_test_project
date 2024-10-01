@@ -1,10 +1,8 @@
 use eframe::egui::{self, Align, CentralPanel, Grid, Layout, TopBottomPanel, Window};
 
+use crate::common::{UserInfo, Tab};
 
-pub struct UserInfo {
-    name: String,
-    age: u32,
-}
+
 
 #[derive(Default)]
 pub struct ImmediateModeApp {
@@ -17,13 +15,6 @@ pub struct ImmediateModeApp {
     temp_user_age: u32,
 }
 
-#[derive(Default, PartialEq, Eq)]
-pub enum Tab {
-    #[default]
-    Home,
-    Settings,
-    About,
-}
 
 impl eframe::App for ImmediateModeApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
