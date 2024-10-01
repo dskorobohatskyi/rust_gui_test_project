@@ -1,8 +1,6 @@
 use eframe::egui::{self, Align, CentralPanel, Grid, Layout, TopBottomPanel, Window};
 
-use crate::common::{UserInfo, Tab};
-
-
+use crate::common::{Tab, UserInfo};
 
 #[derive(Default)]
 pub struct ImmediateModeApp {
@@ -14,7 +12,6 @@ pub struct ImmediateModeApp {
     temp_user_name: String,
     temp_user_age: u32,
 }
-
 
 impl eframe::App for ImmediateModeApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
@@ -55,7 +52,6 @@ impl ImmediateModeApp {
                 .collapsible(false)
                 .resizable(false)
                 .show(ctx, |ui| {
-                    
                     if let Some(valid_user_info) = &self.saved_user_info {
                         ui.horizontal(|ui| {
                             ui.label(format!("Name: {}", valid_user_info.name));
@@ -64,9 +60,7 @@ impl ImmediateModeApp {
                         ui.horizontal(|ui| {
                             ui.label(format!("Age: {}", valid_user_info.age));
                         });
-
-                    }
-                    else {
+                    } else {
                         ui.label("No valid info set yet!");
                     }
 
@@ -99,7 +93,10 @@ impl ImmediateModeApp {
             ui.horizontal(|ui| {
                 if ui.button("Save Settings").clicked() {
                     self.show_save_settings_modal = true;
-                    self.saved_user_info = Some(UserInfo{name: self.temp_user_name.clone(), age: self.temp_user_age}); // TODO what should be instead of clone?
+                    self.saved_user_info = Some(UserInfo {
+                        name: self.temp_user_name.clone(),
+                        age: self.temp_user_age,
+                    }); // TODO what should be instead of clone?
                 }
             });
 
