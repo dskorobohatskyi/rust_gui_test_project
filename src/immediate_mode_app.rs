@@ -1,4 +1,9 @@
 // #[cfg(feature = "immediate-mode")] // This file is compiled only for `immediate-mode`
+
+// let's get inspiration from:
+// https://www.egui.rs/#demo
+// https://crates.io/crates/egui
+
 use eframe::egui::{self, Align, CentralPanel, Grid, Layout, TopBottomPanel, Window};
 
 use crate::common::{Tab, UserInfo};
@@ -8,7 +13,7 @@ pub fn run() -> Result<(), eframe::Error> {
     eframe::run_native(
         "Immediate Mode App",
         options,
-        Box::new(|_cc| Box::new(ImmediateModeApp::default())),
+        Box::new(|_cc| Ok(Box::new(ImmediateModeApp::default()))),
     )
 }
 
