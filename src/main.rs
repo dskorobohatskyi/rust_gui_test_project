@@ -1,11 +1,15 @@
 mod common;
-mod immediate_mode_app; // TODO check if this is correct approach
 
-use immediate_mode_app::ImmediateModeApp;
+#[cfg(feature = "immediate-mode")]
+mod immediate_mode_app;
+
+#[cfg(feature = "retained-mode")]
+mod retained_mode_app;
+
 
 // TODOS
 // Add some retained based mode to check its work
-// add #feature to switch between immediate mode and retained one.
+// add scripts for both modes
 // think about expectations from ui
 // how to change size of fonts, text lines, alignment
 // check if some another solution can be used to keep temp data (from architecture - state machine of UI states)
@@ -14,11 +18,30 @@ use immediate_mode_app::ImmediateModeApp;
 
 // TODO setting to not update frame if no input from user + side effect
 
-fn main() -> Result<(), eframe::Error> {
-    let options = eframe::NativeOptions::default();
-    eframe::run_native(
-        "Complex Egui Example",
-        options,
-        Box::new(|_cc| Box::new(ImmediateModeApp::default())),
-    )
+
+enum Mode {
+    ImmediateMode,
+    RetainedMode,
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+
+    let current_mode = if cfg!(feature = "immediate-mode") {
+        Mode::ImmediateMode
+    } else {
+        Mode::RetainedMode
+    };
+
+    match current_mode {
+        Mode::ImmediateMode => {
+            #[cfg(feature = "immediate-mode")]
+            immediate_mode_app::run()?;
+        }
+        Mode::RetainedMode => {
+            #[cfg(feature = "retained-mode")]
+            retained_mode_app::run()?;
+        }
+    }
+
+    Ok(())
 }

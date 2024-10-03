@@ -1,6 +1,16 @@
+// #[cfg(feature = "immediate-mode")] // This file is compiled only for `immediate-mode`
 use eframe::egui::{self, Align, CentralPanel, Grid, Layout, TopBottomPanel, Window};
 
 use crate::common::{Tab, UserInfo};
+
+pub fn run() -> Result<(), eframe::Error> {
+    let options = eframe::NativeOptions::default();
+    eframe::run_native(
+        "Immediate Mode App",
+        options,
+        Box::new(|_cc| Box::new(ImmediateModeApp::default())),
+    )
+}
 
 #[derive(Default)]
 pub struct ImmediateModeApp {
