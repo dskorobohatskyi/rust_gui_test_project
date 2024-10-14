@@ -6,7 +6,6 @@ mod immediate_mode_app;
 #[cfg(feature = "retained-mode")]
 mod retained_mode_app;
 
-
 // TODOS
 // Add some retained based mode to check its work
 // add scripts for both modes
@@ -18,14 +17,12 @@ mod retained_mode_app;
 
 // TODO setting to not update frame if no input from user + side effect
 
-
 enum Mode {
     ImmediateMode,
     RetainedMode,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-
     let current_mode = if cfg!(feature = "immediate-mode") {
         Mode::ImmediateMode
     } else {
