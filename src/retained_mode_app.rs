@@ -24,18 +24,32 @@ pub struct RetainedModeApp {
 
 // TODO move to common
 pub const CHANNELS_COUNT: usize = 9;
+pub const INVALID_CHANNEL_INDEX: usize = usize::MAX;
+
+// TODO move to common?
+#[derive(Default)]
+pub struct ChannelInfo {
+    integer_value: u32,
+    is_suspicious: bool,
+}
+
+// TODOs:
+// Add some tabs
+// Clean fields buttons
 
 // TODO rename into smth logical after understand what's example for
 #[derive(Default)]
 struct TableApp {
-    prev_value: String,
+    prev_value: String, // TODO need to set as text? then add _text suffix
     prev_suspicious: String,
     prev_channel: String,
     current_value: String,
     current_suspicious: String,
     current_channel: String,
+
+    previous_channel_number: usize,
     current_channel_number: usize,
-    channel_data: [(String, String, String); 9],
+    channel_data: [ChannelInfo; CHANNELS_COUNT],
 }
 
 #[derive(Debug, Clone)]
@@ -45,14 +59,38 @@ enum Message {
     ChangeChannel(i32),
 }
 
+impl TableApp {
+    fn init_data(&mut self) {
+        // Initialization of channel infos
+        for i in 0..CHANNELS_COUNT {
+            let mut rng = thread_rng();
+            let generated_int = rng.gen_range(1..100) as u32;
+            let is_suspicious = generated_int > 75; // just for ex.
+            let channel_info = ChannelInfo {
+                integer_value: generated_int,
+                is_suspicious: is_suspicious,
+            };
+            self.channel_data[i] = channel_info;
+        }
+    }
+}
+
 impl Sandbox for TableApp {
     type Message = Message;
 
     fn new() -> Self {
-        TableApp {
+        let mut app = TableApp {
             channel_data: Default::default(),
+            previous_channel_number: INVALID_CHANNEL_INDEX,
+            current_channel_number: INVALID_CHANNEL_INDEX,
             ..Self::default()
-        }
+        };
+
+        // TODO it might be separated button, Initialize
+        app.init_data();
+        app.update(Message::ButtonPressed(1));
+
+        app
     }
 
     fn title(&self) -> String {
@@ -72,34 +110,52 @@ impl Sandbox for TableApp {
                 _ => {}
             },
             Message::ButtonPressed(index) => {
-                // TODO carry out on initialization, the same AI misunderstanding
-                let mut rng = thread_rng();
-                self.current_value = rng.gen_range(1..100).to_string();
-                self.current_suspicious = "false".to_string();
-                self.current_channel = index.to_string();
+                if self.current_channel_number != INVALID_CHANNEL_INDEX {
+                    self.previous_channel_number = self.current_channel_number;
+                }
+
+                if self.previous_channel_number != INVALID_CHANNEL_INDEX {
+                    let ChannelInfo {
+                        integer_value,
+                        is_suspicious,
+                    } = &self.channel_data[self.previous_channel_number];
+                    self.prev_value = integer_value.to_string();
+                    self.prev_suspicious = is_suspicious.to_string();
+                    self.prev_channel = (self.previous_channel_number + 1).to_string();
+                }
+
                 self.current_channel_number = index - 1;
-                self.channel_data[self.current_channel_number] = (
-                    self.current_value.clone(),
-                    self.current_suspicious.clone(),
-                    self.current_channel.clone(),
-                );
+
+                let ChannelInfo {
+                    integer_value,
+                    is_suspicious,
+                } = &self.channel_data[self.current_channel_number];
+                self.current_value = integer_value.to_string();
+                self.current_suspicious = is_suspicious.to_string();
+                self.current_channel = index.to_string();
             }
             Message::ChangeChannel(change) => {
                 // Update previous values with current values
-                let (prev_value, prev_suspicious, prev_channel) =
-                    &self.channel_data[self.current_channel_number];
-                self.prev_value = prev_value.clone();
-                self.prev_suspicious = prev_suspicious.clone();
-                self.prev_channel = prev_channel.clone();
+                let ChannelInfo {
+                    integer_value,
+                    is_suspicious,
+                } = &self.channel_data[self.previous_channel_number];
+                self.prev_value = integer_value.to_string();
+                self.prev_suspicious = is_suspicious.to_string();
+                self.prev_channel = (self.current_channel_number + 1).to_string();
 
+                self.previous_channel_number = self.current_channel_number;
                 let new_channel_index =
                     ((self.current_channel_number as i32 + change).rem_euclid(9)) as usize;
                 self.current_channel_number = new_channel_index;
 
-                let (value, suspicious, channel) = &self.channel_data[self.current_channel_number];
-                self.current_value = value.clone();
-                self.current_suspicious = suspicious.clone();
-                self.current_channel = channel.clone();
+                let ChannelInfo {
+                    integer_value,
+                    is_suspicious,
+                } = &self.channel_data[self.current_channel_number];
+                self.current_value = integer_value.to_string();
+                self.current_suspicious = is_suspicious.to_string();
+                self.current_channel = (self.current_channel_number + 1).to_string();
             }
         }
     }
