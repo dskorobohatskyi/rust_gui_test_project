@@ -45,7 +45,7 @@ impl ChannelInfoUIAdapter {
     }
 
     fn get_suspicious_as_text(info: &ChannelInfo) -> String {
-        format!("{}", if info.is_suspicious { "Yes" } else { "No" })
+        (if info.is_suspicious { "Yes" } else { "No" }).to_string()
     }
 }
 
@@ -76,7 +76,7 @@ enum ChannelDataRow {
 
 #[derive(Debug, Clone)]
 enum Message {
-    IgnoreInput,                        // used at least for TextInput's to be 'read-only', but still can copy the values
+    IgnoreInput, // used at least for TextInput's to be 'read-only', but still can copy the values
     ButtonPressed(usize),
     ChangeChannel(i32),
     ClearChannelRow(ChannelDataRow),
@@ -151,7 +151,8 @@ impl Sandbox for TableApp {
                 // Update previous values with current values
                 let channel_info = &self.channel_data[self.current_channel_index];
                 self.prev_value_text = ChannelInfoUIAdapter::get_value_as_text(channel_info);
-                self.prev_suspicious_text = ChannelInfoUIAdapter::get_suspicious_as_text(channel_info);
+                self.prev_suspicious_text =
+                    ChannelInfoUIAdapter::get_suspicious_as_text(channel_info);
                 self.prev_channel_text = (self.current_channel_index + 1).to_string();
 
                 // self.previous_channel_index = self.current_channel_index;
@@ -206,7 +207,7 @@ impl Sandbox for TableApp {
                     .push(
                         Container::new(
                             TextInput::new("Previous Value", &self.prev_value_text)
-                                .on_input(move |_| Message::IgnoreInput) // to be in 'enabled' state
+                                .on_input(move |_| Message::IgnoreInput), // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
                         .width(Length::Fill),
@@ -214,7 +215,7 @@ impl Sandbox for TableApp {
                     .push(
                         Container::new(
                             TextInput::new("Current Value", &self.current_value_text)
-                            .on_input(move |_| Message::IgnoreInput) // to be in 'enabled' state
+                                .on_input(move |_| Message::IgnoreInput), // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
                         .width(Length::Fill),
@@ -229,7 +230,7 @@ impl Sandbox for TableApp {
                     .push(
                         Container::new(
                             TextInput::new("Suspicious?", &self.prev_suspicious_text)
-                            .on_input(move |_| Message::IgnoreInput) // to be in 'enabled' state
+                                .on_input(move |_| Message::IgnoreInput), // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
                         .width(Length::Fill),
@@ -237,7 +238,7 @@ impl Sandbox for TableApp {
                     .push(
                         Container::new(
                             TextInput::new("Suspicious?", &self.current_suspicious_text)
-                            .on_input(move |_| Message::IgnoreInput) // to be in 'enabled' state
+                                .on_input(move |_| Message::IgnoreInput), // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
                         .width(Length::Fill),
@@ -252,7 +253,7 @@ impl Sandbox for TableApp {
                     .push(
                         Container::new(
                             TextInput::new("Channel", &self.prev_channel_text)
-                            .on_input(move |_| Message::IgnoreInput) // to be in 'enabled' state
+                                .on_input(move |_| Message::IgnoreInput), // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
                         .width(Length::Fill),
@@ -260,7 +261,7 @@ impl Sandbox for TableApp {
                     .push(
                         Container::new(
                             TextInput::new("Channel", &self.current_channel_text)
-                            .on_input(move |_| Message::IgnoreInput) // to be in 'enabled' state
+                                .on_input(move |_| Message::IgnoreInput), // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
                         .width(Length::Fill),
