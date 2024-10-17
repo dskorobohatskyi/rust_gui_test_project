@@ -1,5 +1,9 @@
 // #[cfg(feature = "retained-mode")] // This file is compiled only for `retained-mode`
 
+
+// Useful links:
+// https://iced.rs/ 
+
 use crate::common::{Tab, UserInfo};
 
 use iced::{
