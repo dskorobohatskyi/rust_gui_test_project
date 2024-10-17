@@ -36,9 +36,20 @@ pub struct ChannelInfo {
     is_suspicious: bool,
 }
 
+struct ChannelInfoUIAdapter {}
+
+impl ChannelInfoUIAdapter {
+    fn get_value_as_text(info: &ChannelInfo) -> String {
+        info.integer_value.to_string()
+    }
+
+    fn get_suspicious_as_text(info: &ChannelInfo) -> String {
+        format!("{}", if info.is_suspicious { "Yes" } else { "No" })
+    }
+}
+
 // TODOs:
 // Add some tabs
-// suspicios: yes/no instead of true/false (helper method)
 // Do I expect to modify input fields, if no - need to make them read-only
 
 // TODO rename into smth logical after understand what's example for
@@ -51,7 +62,7 @@ struct TableApp {
     current_suspicious: String,
     current_channel: String,
 
-    previous_channel_number: usize,
+    // previous_channel_number: usize, // Looks unuseful, but let's see during implementation
     current_channel_number: usize,
     channel_data: [ChannelInfo; CHANNELS_COUNT],
 }
@@ -92,7 +103,7 @@ impl Sandbox for TableApp {
     fn new() -> Self {
         let mut app = TableApp {
             channel_data: Default::default(),
-            previous_channel_number: INVALID_CHANNEL_INDEX,
+            // previous_channel_number: INVALID_CHANNEL_INDEX,
             current_channel_number: INVALID_CHANNEL_INDEX,
             ..Self::default()
         };
@@ -122,50 +133,41 @@ impl Sandbox for TableApp {
             },
             Message::ButtonPressed(index) => {
                 if self.current_channel_number != INVALID_CHANNEL_INDEX {
-                    self.previous_channel_number = self.current_channel_number;
-                }
+                    let channel_info = &self.channel_data[self.current_channel_number];
+                    self.prev_value = ChannelInfoUIAdapter::get_value_as_text(channel_info);
+                    self.prev_suspicious =
+                        ChannelInfoUIAdapter::get_suspicious_as_text(channel_info);
+                    self.prev_channel = (self.current_channel_number + 1).to_string();
 
-                if self.previous_channel_number != INVALID_CHANNEL_INDEX {
-                    let ChannelInfo {
-                        integer_value,
-                        is_suspicious,
-                    } = &self.channel_data[self.previous_channel_number];
-                    self.prev_value = integer_value.to_string();
-                    self.prev_suspicious = is_suspicious.to_string();
-                    self.prev_channel = (self.previous_channel_number + 1).to_string();
+                    // self.previous_channel_number = self.current_channel_number;
                 }
 
                 self.current_channel_number = index - 1;
 
-                let ChannelInfo {
-                    integer_value,
-                    is_suspicious,
-                } = &self.channel_data[self.current_channel_number];
-                self.current_value = integer_value.to_string();
-                self.current_suspicious = is_suspicious.to_string();
+                let channel_info = &self.channel_data[self.current_channel_number];
+                self.current_value = ChannelInfoUIAdapter::get_value_as_text(channel_info);
+                self.current_suspicious =
+                    ChannelInfoUIAdapter::get_suspicious_as_text(channel_info);
                 self.current_channel = index.to_string();
             }
             Message::ChangeChannel(change) => {
+                assert!(self.current_channel_number != INVALID_CHANNEL_INDEX);
+
                 // Update previous values with current values
-                let ChannelInfo {
-                    integer_value,
-                    is_suspicious,
-                } = &self.channel_data[self.previous_channel_number];
-                self.prev_value = integer_value.to_string();
-                self.prev_suspicious = is_suspicious.to_string();
+                let channel_info = &self.channel_data[self.current_channel_number];
+                self.prev_value = ChannelInfoUIAdapter::get_value_as_text(channel_info);
+                self.prev_suspicious = ChannelInfoUIAdapter::get_suspicious_as_text(channel_info);
                 self.prev_channel = (self.current_channel_number + 1).to_string();
 
-                self.previous_channel_number = self.current_channel_number;
+                // self.previous_channel_number = self.current_channel_number;
                 let new_channel_index =
                     ((self.current_channel_number as i32 + change).rem_euclid(9)) as usize;
                 self.current_channel_number = new_channel_index;
 
-                let ChannelInfo {
-                    integer_value,
-                    is_suspicious,
-                } = &self.channel_data[self.current_channel_number];
-                self.current_value = integer_value.to_string();
-                self.current_suspicious = is_suspicious.to_string();
+                let channel_info_ = &self.channel_data[self.current_channel_number];
+                self.current_value = ChannelInfoUIAdapter::get_value_as_text(channel_info_);
+                self.current_suspicious =
+                    ChannelInfoUIAdapter::get_suspicious_as_text(channel_info_);
                 self.current_channel = (self.current_channel_number + 1).to_string();
             }
             Message::ClearChannelRow(selected_row) => {
@@ -174,7 +176,7 @@ impl Sandbox for TableApp {
                     self.prev_suspicious = String::new();
                     self.prev_channel = String::new();
 
-                    self.previous_channel_number = INVALID_CHANNEL_INDEX;
+                    // self.previous_channel_number = INVALID_CHANNEL_INDEX;
                 } else if selected_row == ChannelDataRow::Current {
                     self.current_value = String::new();
                     self.current_suspicious = String::new();
