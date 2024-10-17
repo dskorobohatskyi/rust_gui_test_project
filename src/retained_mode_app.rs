@@ -1,13 +1,12 @@
 // #[cfg(feature = "retained-mode")] // This file is compiled only for `retained-mode`
 
-
 // Useful links:
-// https://iced.rs/ 
+// https://iced.rs/
 
 use crate::common::{Tab, UserInfo};
 
 use iced::{
-    widget::{button, Button, Column, Container, Row, Rule, Text, TextInput},
+    widget::{button, Button, Column, Container, Row, Rule, Space, Text, TextInput},
     Element, Length, Sandbox, Settings,
 };
 
@@ -39,7 +38,8 @@ pub struct ChannelInfo {
 
 // TODOs:
 // Add some tabs
-// Clean fields buttons
+// suspicios: yes/no instead of true/false (helper method)
+// Do I expect to modify input fields, if no - need to make them read-only
 
 // TODO rename into smth logical after understand what's example for
 #[derive(Default)]
@@ -56,11 +56,18 @@ struct TableApp {
     channel_data: [ChannelInfo; CHANNELS_COUNT],
 }
 
+#[derive(Debug, Clone, PartialEq)]
+enum ChannelDataRow {
+    Previous,
+    Current,
+}
+
 #[derive(Debug, Clone)]
 enum Message {
     InputChanged(usize, String),
     ButtonPressed(usize),
     ChangeChannel(i32),
+    ClearChannelRow(ChannelDataRow),
 }
 
 impl TableApp {
@@ -72,7 +79,7 @@ impl TableApp {
             let is_suspicious = generated_int > 75; // just for ex.
             let channel_info = ChannelInfo {
                 integer_value: generated_int,
-                is_suspicious: is_suspicious,
+                is_suspicious,
             };
             self.channel_data[i] = channel_info;
         }
@@ -161,6 +168,23 @@ impl Sandbox for TableApp {
                 self.current_suspicious = is_suspicious.to_string();
                 self.current_channel = (self.current_channel_number + 1).to_string();
             }
+            Message::ClearChannelRow(selected_row) => {
+                if selected_row == ChannelDataRow::Previous {
+                    self.prev_value = String::new();
+                    self.prev_suspicious = String::new();
+                    self.prev_channel = String::new();
+
+                    self.previous_channel_number = INVALID_CHANNEL_INDEX;
+                } else if selected_row == ChannelDataRow::Current {
+                    self.current_value = String::new();
+                    self.current_suspicious = String::new();
+                    self.current_channel = String::new();
+
+                    self.current_channel_number = INVALID_CHANNEL_INDEX;
+                } else {
+                    panic!("Unexpected ChannelDataRow value!!")
+                }
+            }
         }
     }
 
@@ -169,8 +193,18 @@ impl Sandbox for TableApp {
             .spacing(20)
             .push(
                 Column::new()
+                    .width(Length::FillPortion(1)) // Ensure equal width
+                    .spacing(10)
+                    .align_items(iced::Alignment::End)
+                    .push(Space::new(10, 40)) // TODO need to adjust to some calculated value
+                    .push(Text::new("Previous:"))
+                    .push(Text::new("Current:")),
+            )
+            .push(
+                Column::new()
                     .width(Length::FillPortion(2)) // Ensure equal width
                     .spacing(10)
+                    .align_items(iced::Alignment::Center)
                     .push(Text::new("Value"))
                     .push(
                         TextInput::new("Previous Value", &self.prev_value)
@@ -187,6 +221,7 @@ impl Sandbox for TableApp {
                 Column::new()
                     .width(Length::FillPortion(2)) // Ensure equal width
                     .spacing(10)
+                    .align_items(iced::Alignment::Center)
                     .push(Text::new("Suspicious"))
                     .push(
                         TextInput::new("Suspicious?", &self.prev_suspicious)
@@ -203,6 +238,7 @@ impl Sandbox for TableApp {
                 Column::new()
                     .width(Length::FillPortion(2)) // Ensure equal width
                     .spacing(10)
+                    .align_items(iced::Alignment::Center)
                     .push(Text::new("Channel"))
                     .push(
                         TextInput::new("Channel", &self.prev_channel)
@@ -219,9 +255,16 @@ impl Sandbox for TableApp {
                 Column::new()
                     .width(Length::FillPortion(1)) // Ensure equal width
                     .spacing(10)
-                    .push(Text::new("Action"))
-                    .push(Button::new(Text::new("Action")))
-                    .push(Button::new(Text::new("Action"))),
+                    .align_items(iced::Alignment::Center)
+                    .push(Text::new("Actions"))
+                    .push(
+                        Button::new(Text::new("Clear Previous"))
+                            .on_press(Message::ClearChannelRow(ChannelDataRow::Previous)),
+                    )
+                    .push(
+                        Button::new(Text::new("Clear Current"))
+                            .on_press(Message::ClearChannelRow(ChannelDataRow::Current)),
+                    ),
             );
 
         let separator = Rule::horizontal(20);
