@@ -51,6 +51,7 @@ impl ChannelInfoUIAdapter {
 // TODOs:
 // Add some tabs
 // Do I expect to modify input fields, if no - need to make them read-only
+// Play with stretching the window
 
 // TODO rename into smth logical after understand what's example for
 #[derive(Default)]
@@ -192,31 +193,37 @@ impl Sandbox for TableApp {
 
     fn view(&self) -> Element<Message> {
         let table = Row::new()
-            .spacing(20)
+            .spacing(5)
             .push(
                 Column::new()
                     .width(Length::FillPortion(1)) // Ensure equal width
                     .spacing(10)
                     .align_items(iced::Alignment::End)
-                    .push(Space::new(10, 40)) // TODO need to adjust to some calculated value
-                    .push(Text::new("Previous:"))
-                    .push(Text::new("Current:")),
+                    .push(Space::with_height(Length::FillPortion(1)))
+                    .push(Text::new("Previous:").height(Length::FillPortion(2)))
+                    .push(Text::new("Current:").height(Length::FillPortion(2))),
             )
             .push(
                 Column::new()
                     .width(Length::FillPortion(2)) // Ensure equal width
                     .spacing(10)
                     .align_items(iced::Alignment::Center)
-                    .push(Text::new("Value"))
+                    .push(Text::new("Value").height(Length::FillPortion(1)))
                     .push(
-                        TextInput::new("Previous Value", &self.prev_value)
-                            .on_input(move |v| Message::InputChanged(0, v))
-                            .padding(10),
+                        Container::new(
+                            TextInput::new("Previous Value", &self.prev_value)
+                                .on_input(move |v| Message::InputChanged(0, v)),
+                        )
+                        .height(Length::FillPortion(2))
+                        .width(Length::Fill),
                     )
                     .push(
-                        TextInput::new("Current Value", &self.current_value)
-                            .on_input(move |v| Message::InputChanged(3, v))
-                            .padding(10),
+                        Container::new(
+                            TextInput::new("Current Value", &self.current_value)
+                                .on_input(move |v| Message::InputChanged(3, v)),
+                        )
+                        .height(Length::FillPortion(2))
+                        .width(Length::Fill),
                     ),
             )
             .push(
@@ -224,16 +231,22 @@ impl Sandbox for TableApp {
                     .width(Length::FillPortion(2)) // Ensure equal width
                     .spacing(10)
                     .align_items(iced::Alignment::Center)
-                    .push(Text::new("Suspicious"))
+                    .push(Text::new("Suspicious").height(Length::FillPortion(1)))
                     .push(
-                        TextInput::new("Suspicious?", &self.prev_suspicious)
-                            .on_input(move |v| Message::InputChanged(1, v))
-                            .padding(10),
+                        Container::new(
+                            TextInput::new("Suspicious?", &self.prev_suspicious)
+                                .on_input(move |v| Message::InputChanged(1, v)),
+                        )
+                        .height(Length::FillPortion(2))
+                        .width(Length::Fill),
                     )
                     .push(
-                        TextInput::new("Suspicious?", &self.current_suspicious)
-                            .on_input(move |v| Message::InputChanged(4, v))
-                            .padding(10),
+                        Container::new(
+                            TextInput::new("Suspicious?", &self.current_suspicious)
+                                .on_input(move |v| Message::InputChanged(4, v)),
+                        )
+                        .height(Length::FillPortion(2))
+                        .width(Length::Fill),
                     ),
             )
             .push(
@@ -241,32 +254,42 @@ impl Sandbox for TableApp {
                     .width(Length::FillPortion(2)) // Ensure equal width
                     .spacing(10)
                     .align_items(iced::Alignment::Center)
-                    .push(Text::new("Channel"))
+                    .push(Text::new("Channel").height(Length::FillPortion(1)))
                     .push(
-                        TextInput::new("Channel", &self.prev_channel)
-                            .on_input(move |v| Message::InputChanged(2, v))
-                            .padding(10),
+                        Container::new(
+                            TextInput::new("Channel", &self.prev_channel)
+                                .on_input(move |v| Message::InputChanged(2, v)),
+                        )
+                        .height(Length::FillPortion(2))
+                        .width(Length::Fill),
                     )
                     .push(
-                        TextInput::new("Channel", &self.current_channel)
-                            .on_input(move |v| Message::InputChanged(5, v))
-                            .padding(10),
+                        Container::new(
+                            TextInput::new("Channel", &self.current_channel)
+                                .on_input(move |v| Message::InputChanged(5, v)),
+                        )
+                        .height(Length::FillPortion(2))
+                        .width(Length::Fill),
                     ),
             )
             .push(
                 Column::new()
-                    .width(Length::FillPortion(1)) // Ensure equal width
+                    .width(Length::FillPortion(2)) // Ensure equal width
                     .spacing(10)
                     .align_items(iced::Alignment::Center)
-                    .push(Text::new("Actions"))
+                    .push(Text::new("Actions").height(Length::FillPortion(1)))
                     .push(
                         Button::new(Text::new("Clear Previous"))
-                            .on_press(Message::ClearChannelRow(ChannelDataRow::Previous)),
+                            .on_press(Message::ClearChannelRow(ChannelDataRow::Previous))
+                            .height(Length::FillPortion(1)),
                     )
+                    .push(Space::with_height(Length::FillPortion(1)))
                     .push(
                         Button::new(Text::new("Clear Current"))
-                            .on_press(Message::ClearChannelRow(ChannelDataRow::Current)),
-                    ),
+                            .on_press(Message::ClearChannelRow(ChannelDataRow::Current))
+                            .height(Length::FillPortion(1)),
+                    )
+                    .push(Space::with_height(Length::FillPortion(1))),
             );
 
         let separator = Rule::horizontal(20);
@@ -286,7 +309,7 @@ impl Sandbox for TableApp {
 
         // dummies for now
         let wider_buttons = Row::new()
-            .spacing(20)
+            .spacing(10)
             .push(Button::new(Text::new("Wide Button 1")))
             .push(Button::new(Text::new("Wide Button 2")))
             .push(Button::new(Text::new("Wide Button 3")));
@@ -298,13 +321,13 @@ impl Sandbox for TableApp {
 
         let content = Column::new()
             .align_items(iced::Alignment::Center)
-            .spacing(20)
-            .padding(100)
-            .push(table)
+            .spacing(10)
+            .padding(80)
+            .push(table.height(Length::FillPortion(2)))
             .push(separator)
-            .push(buttons_row)
-            .push(wider_buttons)
-            .push(arrows);
+            .push(buttons_row.height(Length::FillPortion(1)))
+            .push(arrows.height(Length::FillPortion(1)))
+            .push(wider_buttons.height(Length::FillPortion(1)));
 
         Container::new(content)
             .width(Length::Fill)
