@@ -28,6 +28,7 @@ pub struct RetainedModeApp {
 // TODO move to common
 pub const CHANNELS_COUNT: usize = 9;
 pub const INVALID_CHANNEL_INDEX: usize = usize::MAX;
+pub const BACKUP_CHANNEL_INDEX: usize = 0;
 
 // TODO move to common?
 #[derive(Default)]
@@ -51,7 +52,6 @@ impl ChannelInfoUIAdapter {
 // TODOs:
 // Add some tabs
 // Play with stretching the window
-// fix crash on 'empty' switch 
 
 // TODO rename into smth logical after understand what's example for
 #[derive(Default)]
@@ -111,7 +111,7 @@ impl Sandbox for TableApp {
 
         // TODO it might be separated button, Initialize
         app.init_data();
-        app.update(Message::ButtonPressed(1));
+        app.update(Message::ButtonPressed(BACKUP_CHANNEL_INDEX + 1));
 
         app
     }
@@ -143,7 +143,10 @@ impl Sandbox for TableApp {
                 self.current_channel_text = index.to_string();
             }
             Message::ChangeChannel(change) => {
-                assert!(self.current_channel_index != INVALID_CHANNEL_INDEX);
+                if self.current_channel_index == INVALID_CHANNEL_INDEX {
+                    self.update(Message::ButtonPressed(BACKUP_CHANNEL_INDEX + 1));
+                    return;
+                }
 
                 // Update previous values with current values
                 let channel_info = &self.channel_data[self.current_channel_index];
