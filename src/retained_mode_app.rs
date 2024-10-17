@@ -51,19 +51,20 @@ impl ChannelInfoUIAdapter {
 // TODOs:
 // Add some tabs
 // Play with stretching the window
+// fix crash on 'empty' switch 
 
 // TODO rename into smth logical after understand what's example for
 #[derive(Default)]
 struct TableApp {
-    prev_value: String, // TODO need to set as text? then add _text suffix
-    prev_suspicious: String,
-    prev_channel: String,
-    current_value: String,
-    current_suspicious: String,
-    current_channel: String,
+    prev_value_text: String, // TODO need to set as text? then add _text suffix __
+    prev_suspicious_text: String,
+    prev_channel_text: String,
+    current_value_text: String,
+    current_suspicious_text: String,
+    current_channel_text: String,
 
-    // previous_channel_number: usize, // Looks unuseful, but let's see during implementation
-    current_channel_number: usize,
+    // previous_channel_index: usize, // Looks unuseful, but let's see during implementation
+    current_channel_index: usize,
     channel_data: [ChannelInfo; CHANNELS_COUNT],
 }
 
@@ -103,8 +104,8 @@ impl Sandbox for TableApp {
     fn new() -> Self {
         let mut app = TableApp {
             channel_data: Default::default(),
-            // previous_channel_number: INVALID_CHANNEL_INDEX,
-            current_channel_number: INVALID_CHANNEL_INDEX,
+            // previous_channel_index: INVALID_CHANNEL_INDEX,
+            current_channel_index: INVALID_CHANNEL_INDEX,
             ..Self::default()
         };
 
@@ -123,57 +124,57 @@ impl Sandbox for TableApp {
         match message {
             Message::IgnoreInput => {}
             Message::ButtonPressed(index) => {
-                if self.current_channel_number != INVALID_CHANNEL_INDEX {
-                    let channel_info = &self.channel_data[self.current_channel_number];
-                    self.prev_value = ChannelInfoUIAdapter::get_value_as_text(channel_info);
-                    self.prev_suspicious =
+                if self.current_channel_index != INVALID_CHANNEL_INDEX {
+                    let channel_info = &self.channel_data[self.current_channel_index];
+                    self.prev_value_text = ChannelInfoUIAdapter::get_value_as_text(channel_info);
+                    self.prev_suspicious_text =
                         ChannelInfoUIAdapter::get_suspicious_as_text(channel_info);
-                    self.prev_channel = (self.current_channel_number + 1).to_string();
+                    self.prev_channel_text = (self.current_channel_index + 1).to_string();
 
-                    // self.previous_channel_number = self.current_channel_number;
+                    // self.previous_channel_index = self.current_channel_index;
                 }
 
-                self.current_channel_number = index - 1;
+                self.current_channel_index = index - 1;
 
-                let channel_info = &self.channel_data[self.current_channel_number];
-                self.current_value = ChannelInfoUIAdapter::get_value_as_text(channel_info);
-                self.current_suspicious =
+                let channel_info = &self.channel_data[self.current_channel_index];
+                self.current_value_text = ChannelInfoUIAdapter::get_value_as_text(channel_info);
+                self.current_suspicious_text =
                     ChannelInfoUIAdapter::get_suspicious_as_text(channel_info);
-                self.current_channel = index.to_string();
+                self.current_channel_text = index.to_string();
             }
             Message::ChangeChannel(change) => {
-                assert!(self.current_channel_number != INVALID_CHANNEL_INDEX);
+                assert!(self.current_channel_index != INVALID_CHANNEL_INDEX);
 
                 // Update previous values with current values
-                let channel_info = &self.channel_data[self.current_channel_number];
-                self.prev_value = ChannelInfoUIAdapter::get_value_as_text(channel_info);
-                self.prev_suspicious = ChannelInfoUIAdapter::get_suspicious_as_text(channel_info);
-                self.prev_channel = (self.current_channel_number + 1).to_string();
+                let channel_info = &self.channel_data[self.current_channel_index];
+                self.prev_value_text = ChannelInfoUIAdapter::get_value_as_text(channel_info);
+                self.prev_suspicious_text = ChannelInfoUIAdapter::get_suspicious_as_text(channel_info);
+                self.prev_channel_text = (self.current_channel_index + 1).to_string();
 
-                // self.previous_channel_number = self.current_channel_number;
+                // self.previous_channel_index = self.current_channel_index;
                 let new_channel_index =
-                    ((self.current_channel_number as i32 + change).rem_euclid(9)) as usize;
-                self.current_channel_number = new_channel_index;
+                    ((self.current_channel_index as i32 + change).rem_euclid(9)) as usize;
+                self.current_channel_index = new_channel_index;
 
-                let channel_info_ = &self.channel_data[self.current_channel_number];
-                self.current_value = ChannelInfoUIAdapter::get_value_as_text(channel_info_);
-                self.current_suspicious =
+                let channel_info_ = &self.channel_data[self.current_channel_index];
+                self.current_value_text = ChannelInfoUIAdapter::get_value_as_text(channel_info_);
+                self.current_suspicious_text =
                     ChannelInfoUIAdapter::get_suspicious_as_text(channel_info_);
-                self.current_channel = (self.current_channel_number + 1).to_string();
+                self.current_channel_text = (self.current_channel_index + 1).to_string();
             }
             Message::ClearChannelRow(selected_row) => {
                 if selected_row == ChannelDataRow::Previous {
-                    self.prev_value = String::new();
-                    self.prev_suspicious = String::new();
-                    self.prev_channel = String::new();
+                    self.prev_value_text = String::new();
+                    self.prev_suspicious_text = String::new();
+                    self.prev_channel_text = String::new();
 
-                    // self.previous_channel_number = INVALID_CHANNEL_INDEX;
+                    // self.previous_channel_index = INVALID_CHANNEL_INDEX;
                 } else if selected_row == ChannelDataRow::Current {
-                    self.current_value = String::new();
-                    self.current_suspicious = String::new();
-                    self.current_channel = String::new();
+                    self.current_value_text = String::new();
+                    self.current_suspicious_text = String::new();
+                    self.current_channel_text = String::new();
 
-                    self.current_channel_number = INVALID_CHANNEL_INDEX;
+                    self.current_channel_index = INVALID_CHANNEL_INDEX;
                 } else {
                     panic!("Unexpected ChannelDataRow value!!")
                 }
@@ -201,7 +202,7 @@ impl Sandbox for TableApp {
                     .push(Text::new("Value").height(Length::FillPortion(1)))
                     .push(
                         Container::new(
-                            TextInput::new("Previous Value", &self.prev_value)
+                            TextInput::new("Previous Value", &self.prev_value_text)
                                 .on_input(move |_| Message::IgnoreInput) // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
@@ -209,7 +210,7 @@ impl Sandbox for TableApp {
                     )
                     .push(
                         Container::new(
-                            TextInput::new("Current Value", &self.current_value)
+                            TextInput::new("Current Value", &self.current_value_text)
                             .on_input(move |_| Message::IgnoreInput) // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
@@ -224,7 +225,7 @@ impl Sandbox for TableApp {
                     .push(Text::new("Suspicious").height(Length::FillPortion(1)))
                     .push(
                         Container::new(
-                            TextInput::new("Suspicious?", &self.prev_suspicious)
+                            TextInput::new("Suspicious?", &self.prev_suspicious_text)
                             .on_input(move |_| Message::IgnoreInput) // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
@@ -232,7 +233,7 @@ impl Sandbox for TableApp {
                     )
                     .push(
                         Container::new(
-                            TextInput::new("Suspicious?", &self.current_suspicious)
+                            TextInput::new("Suspicious?", &self.current_suspicious_text)
                             .on_input(move |_| Message::IgnoreInput) // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
@@ -247,7 +248,7 @@ impl Sandbox for TableApp {
                     .push(Text::new("Channel").height(Length::FillPortion(1)))
                     .push(
                         Container::new(
-                            TextInput::new("Channel", &self.prev_channel)
+                            TextInput::new("Channel", &self.prev_channel_text)
                             .on_input(move |_| Message::IgnoreInput) // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
@@ -255,7 +256,7 @@ impl Sandbox for TableApp {
                     )
                     .push(
                         Container::new(
-                            TextInput::new("Channel", &self.current_channel)
+                            TextInput::new("Channel", &self.current_channel_text)
                             .on_input(move |_| Message::IgnoreInput) // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
@@ -289,7 +290,7 @@ impl Sandbox for TableApp {
             let label = (i + 1).to_string();
             let button = Button::new(Text::new(label))
                 .on_press(Message::ButtonPressed(i + 1))
-                .padding(if self.current_channel_number == i {
+                .padding(if self.current_channel_index == i {
                     20
                 } else {
                     10
