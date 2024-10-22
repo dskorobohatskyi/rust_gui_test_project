@@ -4,6 +4,13 @@
 // https://www.egui.rs/#demo
 // https://crates.io/crates/egui
 
+// TODOs
+// check if some another solution can be used to keep temp data (from architecture - state machine of UI states)
+// can i get rid of eframe to minimize the dependencies to use only egui? is it problem now? // audit dependencies + cargo deny?
+// check ctx.request_repaint() usage
+
+// TODO setting to not update frame if no input from user + side effect
+
 use eframe::egui::{self, Align, CentralPanel, Grid, Layout, TopBottomPanel, Window};
 
 use crate::common::{Tab, UserInfo};

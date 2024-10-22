@@ -3,7 +3,9 @@
 // Useful links:
 // https://iced.rs/
 
-use crate::common::{Tab, UserInfo};
+use crate::common::{
+    ChannelInfo, Tab, BACKUP_CHANNEL_INDEX, CHANNELS_COUNT, INVALID_CHANNEL_INDEX,
+};
 
 use iced::{
     widget::{button, Button, Column, Container, Row, Rule, Space, Text, TextInput},
@@ -13,28 +15,13 @@ use iced::{
 use rand::{thread_rng, Rng};
 
 pub fn run() -> iced::Result {
-    TableApp::run(Settings::default())
+    ChannelBasedApp::run(Settings::default())
 }
 
 #[derive(Default)]
 pub struct RetainedModeApp {
     #[allow(unused)]
     active_tab: Tab,
-
-    #[allow(unused)]
-    saved_user_info: Option<UserInfo>,
-}
-
-// TODO move to common
-pub const CHANNELS_COUNT: usize = 9;
-pub const INVALID_CHANNEL_INDEX: usize = usize::MAX;
-pub const BACKUP_CHANNEL_INDEX: usize = 0;
-
-// TODO move to common?
-#[derive(Default)]
-pub struct ChannelInfo {
-    integer_value: u32,
-    is_suspicious: bool,
 }
 
 struct ChannelInfoUIAdapter {}
@@ -53,10 +40,9 @@ impl ChannelInfoUIAdapter {
 // Add some tabs
 // Play with stretching the window
 
-// TODO rename into smth logical after understand what's example for
 #[derive(Default)]
-struct TableApp {
-    prev_value_text: String, // TODO need to set as text? then add _text suffix __
+struct ChannelBasedApp {
+    prev_value_text: String,
     prev_suspicious_text: String,
     prev_channel_text: String,
     current_value_text: String,
@@ -82,7 +68,7 @@ enum Message {
     ClearChannelRow(ChannelDataRow),
 }
 
-impl TableApp {
+impl ChannelBasedApp {
     fn init_data(&mut self) {
         // Initialization of channel infos
         for i in 0..CHANNELS_COUNT {
@@ -98,11 +84,11 @@ impl TableApp {
     }
 }
 
-impl Sandbox for TableApp {
+impl Sandbox for ChannelBasedApp {
     type Message = Message;
 
     fn new() -> Self {
-        let mut app = TableApp {
+        let mut app = ChannelBasedApp {
             channel_data: Default::default(),
             // previous_channel_index: INVALID_CHANNEL_INDEX,
             current_channel_index: INVALID_CHANNEL_INDEX,
@@ -117,7 +103,7 @@ impl Sandbox for TableApp {
     }
 
     fn title(&self) -> String {
-        String::from("Table App with Channels") // TODO rename based on struct renaming
+        String::from("Some App with Channels")
     }
 
     fn update(&mut self, message: Message) {

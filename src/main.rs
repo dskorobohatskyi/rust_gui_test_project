@@ -10,11 +10,6 @@ mod retained_mode_app;
 // add scripts for both modes
 // think about expectations from ui
 // how to change size of fonts, text lines, alignment (how to use styles)
-// check if some another solution can be used to keep temp data (from architecture - state machine of UI states)
-// can i get rid of eframe to minimize the dependencies to use only egui? is it problem now? // audit dependencies + cargo deny?
-// check ctx.request_repaint() usage
-
-// TODO setting to not update frame if no input from user + side effect
 
 enum Mode {
     ImmediateMode,
