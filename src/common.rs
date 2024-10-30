@@ -1,3 +1,4 @@
+#[cfg(feature = "immediate-mode")]
 pub struct UserInfo {
     pub name: String,
     pub age: u32,

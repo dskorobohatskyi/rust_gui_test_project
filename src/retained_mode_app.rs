@@ -36,7 +36,6 @@ impl ChannelInfoUIExt for ChannelInfo {
 // TODOs:
 // Play with stretching the window
 
-#[derive(Default)]
 struct ChannelBasedApp {
     previous_channel_index: usize,
     current_channel_index: usize,
@@ -109,7 +108,6 @@ impl Sandbox for ChannelBasedApp {
             channel_data: Default::default(),
             active_tab: ApplicationTab::Home,
             current_suspicious_limit: SUSPICIOUS_LIMIT,
-            ..Self::default()
         };
 
         // TODO it might be separated button, Initialize
