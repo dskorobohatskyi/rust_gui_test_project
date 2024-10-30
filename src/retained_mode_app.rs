@@ -4,11 +4,12 @@
 // https://iced.rs/
 
 use crate::common::{
-    ApplicationTab, ChannelInfo, BACKUP_CHANNEL_INDEX, CHANNELS_COUNT, INVALID_CHANNEL_INDEX,
+    ApplicationTab, ChannelInfo, BACKUP_CHANNEL_INDEX, CHANNELS_COUNT, HIGH_INTEGER_LIMIT,
+    INVALID_CHANNEL_INDEX, LOW_INTEGER_LIMIT, SUSPICIOUS_LIMIT,
 };
 
 use iced::{
-    widget::{button, text, text_input, Button, Column, Container, Row, Rule, Space},
+    widget::{button, slider, text, text_input, Button, Column, Container, Row, Rule, Space},
     Element, Length, Sandbox, Settings,
 };
 
@@ -35,6 +36,7 @@ impl ChannelInfoUIAdapter {
 
 #[derive(Default)]
 struct ChannelBasedApp {
+    // TODO do we really need to keep these strings?
     prev_value_text: String,
     prev_suspicious_text: String,
     prev_channel_text: String,
@@ -42,9 +44,10 @@ struct ChannelBasedApp {
     current_suspicious_text: String,
     current_channel_text: String,
 
-    // previous_channel_index: usize, // Looks unuseful, but let's see during implementation
+    previous_channel_index: usize,
     current_channel_index: usize,
     channel_data: [ChannelInfo; CHANNELS_COUNT],
+    current_suspicious_limit: u32,
 
     active_tab: ApplicationTab,
 }
@@ -62,6 +65,8 @@ enum Message {
     ButtonPressed(usize),
     ChangeChannel(i32),
     ClearChannelRow(ChannelDataRow),
+    ModifyingSuspiciosValue(u32),
+    ReleasedSuspiciousSlider,
 }
 
 impl ChannelBasedApp {
@@ -69,13 +74,19 @@ impl ChannelBasedApp {
         // Initialization of channel infos
         for i in 0..CHANNELS_COUNT {
             let mut rng = thread_rng();
-            let generated_int = rng.gen_range(1..100) as u32;
-            let is_suspicious = generated_int > 75; // just for ex.
+            let generated_int = rng.gen_range(LOW_INTEGER_LIMIT..=HIGH_INTEGER_LIMIT) as u32;
+            let is_suspicious = generated_int > self.current_suspicious_limit;
             let channel_info = ChannelInfo {
                 integer_value: generated_int,
                 is_suspicious,
             };
             self.channel_data[i] = channel_info;
+        }
+    }
+
+    fn update_suspicious(&mut self) {
+        for data in &mut self.channel_data {
+            data.is_suspicious = data.integer_value > self.current_suspicious_limit;
         }
     }
 
@@ -97,10 +108,11 @@ impl Sandbox for ChannelBasedApp {
 
     fn new() -> Self {
         let mut app = ChannelBasedApp {
-            // previous_channel_index: INVALID_CHANNEL_INDEX,
+            previous_channel_index: INVALID_CHANNEL_INDEX,
             current_channel_index: INVALID_CHANNEL_INDEX,
             channel_data: Default::default(),
             active_tab: ApplicationTab::Home,
+            current_suspicious_limit: SUSPICIOUS_LIMIT,
             ..Self::default()
         };
 
@@ -129,7 +141,7 @@ impl Sandbox for ChannelBasedApp {
                         ChannelInfoUIAdapter::get_suspicious_as_text(channel_info);
                     self.prev_channel_text = (self.current_channel_index + 1).to_string();
 
-                    // self.previous_channel_index = self.current_channel_index;
+                    self.previous_channel_index = self.current_channel_index;
                 }
 
                 self.current_channel_index = index - 1;
@@ -153,7 +165,7 @@ impl Sandbox for ChannelBasedApp {
                     ChannelInfoUIAdapter::get_suspicious_as_text(channel_info);
                 self.prev_channel_text = (self.current_channel_index + 1).to_string();
 
-                // self.previous_channel_index = self.current_channel_index;
+                self.previous_channel_index = self.current_channel_index;
                 let new_channel_index =
                     ((self.current_channel_index as i32 + change).rem_euclid(9)) as usize;
                 self.current_channel_index = new_channel_index;
@@ -170,7 +182,7 @@ impl Sandbox for ChannelBasedApp {
                     self.prev_suspicious_text = String::new();
                     self.prev_channel_text = String::new();
 
-                    // self.previous_channel_index = INVALID_CHANNEL_INDEX;
+                    self.previous_channel_index = INVALID_CHANNEL_INDEX;
                 } else if selected_row == ChannelDataRow::Current {
                     self.current_value_text = String::new();
                     self.current_suspicious_text = String::new();
@@ -179,6 +191,23 @@ impl Sandbox for ChannelBasedApp {
                     self.current_channel_index = INVALID_CHANNEL_INDEX;
                 } else {
                     panic!("Unexpected ChannelDataRow value!!")
+                }
+            }
+            Message::ModifyingSuspiciosValue(new_value) => {
+                self.current_suspicious_limit = new_value;
+            }
+            Message::ReleasedSuspiciousSlider => {
+                self.update_suspicious();
+
+                if self.previous_channel_index != INVALID_CHANNEL_INDEX {
+                    self.prev_suspicious_text = ChannelInfoUIAdapter::get_suspicious_as_text(
+                        &self.channel_data[self.previous_channel_index],
+                    );
+                }
+                if self.current_channel_index != INVALID_CHANNEL_INDEX {
+                    self.current_suspicious_text = ChannelInfoUIAdapter::get_suspicious_as_text(
+                        &self.channel_data[self.current_channel_index],
+                    );
                 }
             }
         }
@@ -304,8 +333,26 @@ impl Sandbox for ChannelBasedApp {
         let wider_buttons = Row::new()
             .spacing(10)
             .push(button(text("Wide Button 1")))
-            .push(button(text("Wide Button 2")))
-            .push(button(text("Wide Button 3")));
+            .push(button(text("Wide Button 2")));
+
+        let suspicios_limit_slider = slider(
+            LOW_INTEGER_LIMIT..=HIGH_INTEGER_LIMIT,
+            self.current_suspicious_limit,
+            Message::ModifyingSuspiciosValue,
+        )
+        .step(1)
+        .on_release(Message::ReleasedSuspiciousSlider);
+
+        let suspicious_limit_section = Row::new()
+            .push(
+                Column::new()
+                    .push(text("Current suspicious limit:"))
+                    .spacing(10),
+            )
+            .push(Space::with_width(10))
+            .push(Column::new().push(text(self.current_suspicious_limit.to_string())))
+            .push(Space::with_width(10))
+            .push(Column::new().push(suspicios_limit_slider).spacing(10));
 
         let arrows = Row::new()
             .spacing(10)
@@ -320,7 +367,9 @@ impl Sandbox for ChannelBasedApp {
             .push(separator)
             .push(buttons_row.height(Length::FillPortion(1)))
             .push(arrows.height(Length::FillPortion(1)))
-            .push(wider_buttons.height(Length::FillPortion(1)));
+            .push(wider_buttons.height(Length::FillPortion(1)))
+            .push(suspicious_limit_section)
+            .height(Length::FillPortion(1));
 
         let tab_row = Row::new()
             .spacing(10)
