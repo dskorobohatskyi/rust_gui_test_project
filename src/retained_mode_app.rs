@@ -8,7 +8,7 @@ use crate::common::{
 };
 
 use iced::{
-    widget::{button, Button, Column, Container, Row, Rule, Space, Text, TextInput},
+    widget::{button, text, text_input, Button, Column, Container, Row, Rule, Space},
     Element, Length, Sandbox, Settings,
 };
 
@@ -81,10 +81,9 @@ impl ChannelBasedApp {
 
     fn tab_button<'a>(&self, label: &'a str, tab: &ApplicationTab) -> Button<'a, Message> {
         let is_active_tab = tab == &self.active_tab;
-        let button = Button::new(Text::new(label))
+        let button = button(text(label))
             .on_press(Message::TabSelected(tab.clone()))
             .padding(if is_active_tab { 8 } else { 10 });
-
         if is_active_tab {
             button.style(iced::theme::Button::Primary) // Highlight the active tab
         } else {
@@ -194,18 +193,18 @@ impl Sandbox for ChannelBasedApp {
                     .spacing(10)
                     .align_items(iced::Alignment::End)
                     .push(Space::with_height(Length::FillPortion(1)))
-                    .push(Text::new("Previous:").height(Length::FillPortion(2)))
-                    .push(Text::new("Current:").height(Length::FillPortion(2))),
+                    .push(text("Previous:").height(Length::FillPortion(2)))
+                    .push(text("Current:").height(Length::FillPortion(2))),
             )
             .push(
                 Column::new()
                     .width(Length::FillPortion(2)) // Ensure equal width
                     .spacing(10)
                     .align_items(iced::Alignment::Center)
-                    .push(Text::new("Value").height(Length::FillPortion(1)))
+                    .push(text("Value").height(Length::FillPortion(1)))
                     .push(
                         Container::new(
-                            TextInput::new("Previous Value", &self.prev_value_text)
+                            text_input("Previous Value", &self.prev_value_text)
                                 .on_input(move |_| Message::IgnoreInput), // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
@@ -213,7 +212,7 @@ impl Sandbox for ChannelBasedApp {
                     )
                     .push(
                         Container::new(
-                            TextInput::new("Current Value", &self.current_value_text)
+                            text_input("Current Value", &self.current_value_text)
                                 .on_input(move |_| Message::IgnoreInput), // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
@@ -225,10 +224,10 @@ impl Sandbox for ChannelBasedApp {
                     .width(Length::FillPortion(2)) // Ensure equal width
                     .spacing(10)
                     .align_items(iced::Alignment::Center)
-                    .push(Text::new("Suspicious").height(Length::FillPortion(1)))
+                    .push(text("Suspicious").height(Length::FillPortion(1)))
                     .push(
                         Container::new(
-                            TextInput::new("Suspicious?", &self.prev_suspicious_text)
+                            text_input("Suspicious?", &self.prev_suspicious_text)
                                 .on_input(move |_| Message::IgnoreInput), // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
@@ -236,7 +235,7 @@ impl Sandbox for ChannelBasedApp {
                     )
                     .push(
                         Container::new(
-                            TextInput::new("Suspicious?", &self.current_suspicious_text)
+                            text_input("Suspicious?", &self.current_suspicious_text)
                                 .on_input(move |_| Message::IgnoreInput), // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
@@ -248,10 +247,10 @@ impl Sandbox for ChannelBasedApp {
                     .width(Length::FillPortion(2)) // Ensure equal width
                     .spacing(10)
                     .align_items(iced::Alignment::Center)
-                    .push(Text::new("Channel").height(Length::FillPortion(1)))
+                    .push(text("Channel").height(Length::FillPortion(1)))
                     .push(
                         Container::new(
-                            TextInput::new("Channel", &self.prev_channel_text)
+                            text_input("Channel", &self.prev_channel_text)
                                 .on_input(move |_| Message::IgnoreInput), // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
@@ -259,7 +258,7 @@ impl Sandbox for ChannelBasedApp {
                     )
                     .push(
                         Container::new(
-                            TextInput::new("Channel", &self.current_channel_text)
+                            text_input("Channel", &self.current_channel_text)
                                 .on_input(move |_| Message::IgnoreInput), // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
@@ -271,15 +270,15 @@ impl Sandbox for ChannelBasedApp {
                     .width(Length::FillPortion(2)) // Ensure equal width
                     .spacing(10)
                     .align_items(iced::Alignment::Center)
-                    .push(Text::new("Actions").height(Length::FillPortion(1)))
+                    .push(text("Actions").height(Length::FillPortion(1)))
                     .push(
-                        Button::new(Text::new("Clear Previous"))
+                        button(text("Clear Previous"))
                             .on_press(Message::ClearChannelRow(ChannelDataRow::Previous))
                             .height(Length::FillPortion(1)),
                     )
                     .push(Space::with_height(Length::FillPortion(1)))
                     .push(
-                        Button::new(Text::new("Clear Current"))
+                        button(text("Clear Current"))
                             .on_press(Message::ClearChannelRow(ChannelDataRow::Current))
                             .height(Length::FillPortion(1)),
                     )
@@ -291,7 +290,7 @@ impl Sandbox for ChannelBasedApp {
         let mut buttons_row = Row::new().spacing(10);
         for i in 0..CHANNELS_COUNT {
             let label = (i + 1).to_string();
-            let button = Button::new(Text::new(label))
+            let button = button(text(label))
                 .on_press(Message::ButtonPressed(i + 1))
                 .padding(if self.current_channel_index == i {
                     20
@@ -304,14 +303,14 @@ impl Sandbox for ChannelBasedApp {
         // dummies for now
         let wider_buttons = Row::new()
             .spacing(10)
-            .push(Button::new(Text::new("Wide Button 1")))
-            .push(Button::new(Text::new("Wide Button 2")))
-            .push(Button::new(Text::new("Wide Button 3")));
+            .push(button(text("Wide Button 1")))
+            .push(button(text("Wide Button 2")))
+            .push(button(text("Wide Button 3")));
 
         let arrows = Row::new()
             .spacing(10)
-            .push(Button::new(Text::new("<")).on_press(Message::ChangeChannel(-1)))
-            .push(Button::new(Text::new(">")).on_press(Message::ChangeChannel(1)));
+            .push(button(text("<")).on_press(Message::ChangeChannel(-1)))
+            .push(button(text(">")).on_press(Message::ChangeChannel(1)));
 
         let main_content = Column::new()
             .align_items(iced::Alignment::Center)
@@ -333,8 +332,8 @@ impl Sandbox for ChannelBasedApp {
 
         let content = match self.active_tab {
             ApplicationTab::Home => main_content,
-            ApplicationTab::Settings => Column::new().push(Text::new("Dummy Tab Content")),
-            ApplicationTab::About => Column::new().push(Text::new("About Tab Content")),
+            ApplicationTab::Settings => Column::new().push(text("Dummy Tab Content")),
+            ApplicationTab::About => Column::new().push(text("About Tab Content")),
         };
 
         Container::new(
