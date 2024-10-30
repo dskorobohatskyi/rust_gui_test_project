@@ -7,17 +7,20 @@ edition = "2021"
 [features]
 # Define modes as features, only one can be active at a time.
 immediate-mode = ["eframe", "egui", "winapi"]
-retained-mode = []  # No external dependencies for now, iced will be added later.
+retained-mode  = ["iced"]
 
 # Set the default feature to immediate-mode for now
-default = ["immediate-mode"]
+#default = ["immediate-mode"]
+default = ["retained-mode"]
 
 
 [dependencies]
+# Commond dependencies
+rand = "0.8.5"
 # Immediate Mode Dependencies (eframe and egui)
-egui = {version = "0.24", optional = true }
-eframe = {version = "0.24", optional = true  }
+egui = {version = "0.29", optional = true }
+eframe = {version = "0.29", optional = true  }
 winapi = { version = "0.3", features = ["winuser"], optional = true }
 
-# Future Retained Mode Dependencies (iced can be added here)
-# iced = { version = "0.6", optional = true }  # Will be added when you move to retained mode
+# Retained Mode Dependencies (iced can be added here)
+iced = { version = "0.10", optional = true }

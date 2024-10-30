@@ -1,20 +1,32 @@
 // #[cfg(feature = "immediate-mode")] // This file is compiled only for `immediate-mode`
+
+// let's get inspiration from:
+// https://www.egui.rs/#demo
+// https://crates.io/crates/egui
+
+// TODOs
+// check if some another solution can be used to keep temp data (from architecture - state machine of UI states)
+// can i get rid of eframe to minimize the dependencies to use only egui? is it problem now? // audit dependencies + cargo deny?
+// check ctx.request_repaint() usage
+
+// TODO setting to not update frame if no input from user + side effect
+
 use eframe::egui::{self, Align, CentralPanel, Grid, Layout, TopBottomPanel, Window};
 
-use crate::common::{Tab, UserInfo};
+use crate::common::{ApplicationTab, UserInfo};
 
 pub fn run() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions::default();
     eframe::run_native(
         "Immediate Mode App",
         options,
-        Box::new(|_cc| Box::new(ImmediateModeApp::default())),
+        Box::new(|_cc| Ok(Box::new(ImmediateModeApp::default()))),
     )
 }
 
 #[derive(Default)]
 pub struct ImmediateModeApp {
-    active_tab: Tab,
+    active_tab: ApplicationTab,
     show_main_modal: bool,
     show_save_settings_modal: bool,
 
@@ -27,16 +39,16 @@ impl eframe::App for ImmediateModeApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         TopBottomPanel::top("top_panel").show(ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.selectable_value(&mut self.active_tab, Tab::Home, "Home");
-                ui.selectable_value(&mut self.active_tab, Tab::Settings, "Settings");
-                ui.selectable_value(&mut self.active_tab, Tab::About, "About");
+                ui.selectable_value(&mut self.active_tab, ApplicationTab::Home, "Home");
+                ui.selectable_value(&mut self.active_tab, ApplicationTab::Settings, "Settings");
+                ui.selectable_value(&mut self.active_tab, ApplicationTab::About, "About");
             });
         });
 
         CentralPanel::default().show(ctx, |ui| match self.active_tab {
-            Tab::Home => self.show_home_tab(ctx, ui),
-            Tab::Settings => self.show_settings_tab(ctx, ui),
-            Tab::About => self.show_about_tab(ctx, ui),
+            ApplicationTab::Home => self.show_home_tab(ctx, ui),
+            ApplicationTab::Settings => self.show_settings_tab(ctx, ui),
+            ApplicationTab::About => self.show_about_tab(ctx, ui),
         });
     }
 }
