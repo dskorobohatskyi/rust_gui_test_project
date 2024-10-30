@@ -4,7 +4,7 @@
 // https://iced.rs/
 
 use crate::common::{
-    ChannelInfo, Tab, BACKUP_CHANNEL_INDEX, CHANNELS_COUNT, INVALID_CHANNEL_INDEX,
+    ApplicationTab, ChannelInfo, BACKUP_CHANNEL_INDEX, CHANNELS_COUNT, INVALID_CHANNEL_INDEX,
 };
 
 use iced::{
@@ -16,12 +16,6 @@ use rand::{thread_rng, Rng};
 
 pub fn run() -> iced::Result {
     ChannelBasedApp::run(Settings::default())
-}
-
-#[derive(Default)]
-pub struct RetainedModeApp {
-    #[allow(unused)]
-    active_tab: Tab,
 }
 
 struct ChannelInfoUIAdapter {}
@@ -37,7 +31,6 @@ impl ChannelInfoUIAdapter {
 }
 
 // TODOs:
-// Add some tabs
 // Play with stretching the window
 
 #[derive(Default)]
@@ -52,6 +45,8 @@ struct ChannelBasedApp {
     // previous_channel_index: usize, // Looks unuseful, but let's see during implementation
     current_channel_index: usize,
     channel_data: [ChannelInfo; CHANNELS_COUNT],
+
+    active_tab: ApplicationTab,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -63,6 +58,7 @@ enum ChannelDataRow {
 #[derive(Debug, Clone)]
 enum Message {
     IgnoreInput, // used at least for TextInput's to be 'read-only', but still can copy the values
+    TabSelected(ApplicationTab),
     ButtonPressed(usize),
     ChangeChannel(i32),
     ClearChannelRow(ChannelDataRow),
@@ -82,6 +78,19 @@ impl ChannelBasedApp {
             self.channel_data[i] = channel_info;
         }
     }
+
+    fn tab_button<'a>(&self, label: &'a str, tab: &ApplicationTab) -> Button<'a, Message> {
+        let is_active_tab = tab == &self.active_tab;
+        let button = Button::new(Text::new(label))
+            .on_press(Message::TabSelected(tab.clone()))
+            .padding(if is_active_tab { 8 } else { 10 });
+
+        if is_active_tab {
+            button.style(iced::theme::Button::Primary) // Highlight the active tab
+        } else {
+            button.style(iced::theme::Button::Secondary)
+        }
+    }
 }
 
 impl Sandbox for ChannelBasedApp {
@@ -89,9 +98,10 @@ impl Sandbox for ChannelBasedApp {
 
     fn new() -> Self {
         let mut app = ChannelBasedApp {
-            channel_data: Default::default(),
             // previous_channel_index: INVALID_CHANNEL_INDEX,
             current_channel_index: INVALID_CHANNEL_INDEX,
+            channel_data: Default::default(),
+            active_tab: ApplicationTab::Home,
             ..Self::default()
         };
 
@@ -109,6 +119,9 @@ impl Sandbox for ChannelBasedApp {
     fn update(&mut self, message: Message) {
         match message {
             Message::IgnoreInput => {}
+            Message::TabSelected(tab) => {
+                self.active_tab = tab;
+            }
             Message::ButtonPressed(index) => {
                 if self.current_channel_index != INVALID_CHANNEL_INDEX {
                     let channel_info = &self.channel_data[self.current_channel_index];
@@ -300,7 +313,7 @@ impl Sandbox for ChannelBasedApp {
             .push(Button::new(Text::new("<")).on_press(Message::ChangeChannel(-1)))
             .push(Button::new(Text::new(">")).on_press(Message::ChangeChannel(1)));
 
-        let content = Column::new()
+        let main_content = Column::new()
             .align_items(iced::Alignment::Center)
             .spacing(10)
             .padding(80)
@@ -310,11 +323,34 @@ impl Sandbox for ChannelBasedApp {
             .push(arrows.height(Length::FillPortion(1)))
             .push(wider_buttons.height(Length::FillPortion(1)));
 
-        Container::new(content)
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .center_x()
-            .center_y()
-            .into()
+        let tab_row = Row::new()
+            .spacing(10)
+            .width(Length::Fill) // Make the row take the full width
+            .align_items(iced::Alignment::Start)
+            .push(self.tab_button("Main", &ApplicationTab::Home))
+            .push(self.tab_button("Dummy", &ApplicationTab::Settings))
+            .push(self.tab_button("About", &ApplicationTab::About));
+
+        let content = match self.active_tab {
+            ApplicationTab::Home => main_content,
+            ApplicationTab::Settings => Column::new().push(Text::new("Dummy Tab Content")),
+            ApplicationTab::About => Column::new().push(Text::new("About Tab Content")),
+        };
+
+        Container::new(
+            Column::new()
+                .push(
+                    Container::new(tab_row)
+                        .width(Length::Fill) // Make sure the tab row takes full width
+                        .align_y(iced::alignment::Vertical::Top)
+                        .center_x(),
+                )
+                .push(content)
+                .spacing(20)
+                .padding(20),
+        )
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .into()
     }
 }

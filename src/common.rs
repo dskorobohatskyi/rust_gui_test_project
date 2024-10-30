@@ -3,8 +3,8 @@ pub struct UserInfo {
     pub age: u32,
 }
 
-#[derive(Default, PartialEq, Eq)]
-pub enum Tab {
+#[derive(Default, PartialEq, Eq, Debug, Clone)]
+pub enum ApplicationTab {
     #[default]
     Home,
     Settings,
