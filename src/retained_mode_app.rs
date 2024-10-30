@@ -19,15 +19,17 @@ pub fn run() -> iced::Result {
     ChannelBasedApp::run(Settings::default())
 }
 
-struct ChannelInfoUIAdapter {}
+trait ChannelInfoUIExt {
+    fn value_as_text(&self) -> String;
+    fn suspicious_as_text(&self) -> String;
+}
 
-impl ChannelInfoUIAdapter {
-    fn get_value_as_text(info: &ChannelInfo) -> String {
-        info.integer_value.to_string()
+impl ChannelInfoUIExt for ChannelInfo {
+    fn value_as_text(&self) -> String {
+        self.integer_value.to_string()
     }
-
-    fn get_suspicious_as_text(info: &ChannelInfo) -> String {
-        (if info.is_suspicious { "Yes" } else { "No" }).to_string()
+    fn suspicious_as_text(&self) -> String {
+        (if self.is_suspicious { "Yes" } else { "No" }).to_string()
     }
 }
 
@@ -95,11 +97,13 @@ impl ChannelBasedApp {
         let button = button(text(label))
             .on_press(Message::TabSelected(tab.clone()))
             .padding(if is_active_tab { 8 } else { 10 });
-        if is_active_tab {
-            button.style(iced::theme::Button::Primary) // Highlight the active tab
+
+        let style = if is_active_tab {
+            iced::theme::Button::Primary
         } else {
-            button.style(iced::theme::Button::Secondary)
-        }
+            iced::theme::Button::Secondary
+        };
+        button.style(style)
     }
 }
 
@@ -136,9 +140,8 @@ impl Sandbox for ChannelBasedApp {
             Message::ButtonPressed(index) => {
                 if self.current_channel_index != INVALID_CHANNEL_INDEX {
                     let channel_info = &self.channel_data[self.current_channel_index];
-                    self.prev_value_text = ChannelInfoUIAdapter::get_value_as_text(channel_info);
-                    self.prev_suspicious_text =
-                        ChannelInfoUIAdapter::get_suspicious_as_text(channel_info);
+                    self.prev_value_text = channel_info.value_as_text();
+                    self.prev_suspicious_text = channel_info.suspicious_as_text();
                     self.prev_channel_text = (self.current_channel_index + 1).to_string();
 
                     self.previous_channel_index = self.current_channel_index;
@@ -147,9 +150,8 @@ impl Sandbox for ChannelBasedApp {
                 self.current_channel_index = index - 1;
 
                 let channel_info = &self.channel_data[self.current_channel_index];
-                self.current_value_text = ChannelInfoUIAdapter::get_value_as_text(channel_info);
-                self.current_suspicious_text =
-                    ChannelInfoUIAdapter::get_suspicious_as_text(channel_info);
+                self.current_value_text = channel_info.value_as_text();
+                self.current_suspicious_text = channel_info.suspicious_as_text();
                 self.current_channel_text = index.to_string();
             }
             Message::ChangeChannel(change) => {
@@ -160,9 +162,8 @@ impl Sandbox for ChannelBasedApp {
 
                 // Update previous values with current values
                 let channel_info = &self.channel_data[self.current_channel_index];
-                self.prev_value_text = ChannelInfoUIAdapter::get_value_as_text(channel_info);
-                self.prev_suspicious_text =
-                    ChannelInfoUIAdapter::get_suspicious_as_text(channel_info);
+                self.prev_value_text = channel_info.value_as_text();
+                self.prev_suspicious_text = channel_info.suspicious_as_text();
                 self.prev_channel_text = (self.current_channel_index + 1).to_string();
 
                 self.previous_channel_index = self.current_channel_index;
@@ -171,9 +172,8 @@ impl Sandbox for ChannelBasedApp {
                 self.current_channel_index = new_channel_index;
 
                 let channel_info_ = &self.channel_data[self.current_channel_index];
-                self.current_value_text = ChannelInfoUIAdapter::get_value_as_text(channel_info_);
-                self.current_suspicious_text =
-                    ChannelInfoUIAdapter::get_suspicious_as_text(channel_info_);
+                self.current_value_text = channel_info_.value_as_text();
+                self.current_suspicious_text = channel_info_.suspicious_as_text();
                 self.current_channel_text = (self.current_channel_index + 1).to_string();
             }
             Message::ClearChannelRow(selected_row) => {
@@ -200,14 +200,12 @@ impl Sandbox for ChannelBasedApp {
                 self.update_suspicious();
 
                 if self.previous_channel_index != INVALID_CHANNEL_INDEX {
-                    self.prev_suspicious_text = ChannelInfoUIAdapter::get_suspicious_as_text(
-                        &self.channel_data[self.previous_channel_index],
-                    );
+                    self.prev_suspicious_text =
+                        self.channel_data[self.previous_channel_index].suspicious_as_text();
                 }
                 if self.current_channel_index != INVALID_CHANNEL_INDEX {
-                    self.current_suspicious_text = ChannelInfoUIAdapter::get_suspicious_as_text(
-                        &self.channel_data[self.current_channel_index],
-                    );
+                    self.current_suspicious_text =
+                        self.channel_data[self.current_channel_index].suspicious_as_text();
                 }
             }
         }
