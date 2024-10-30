@@ -38,14 +38,6 @@ impl ChannelInfoUIExt for ChannelInfo {
 
 #[derive(Default)]
 struct ChannelBasedApp {
-    // TODO do we really need to keep these strings?
-    prev_value_text: String,
-    prev_suspicious_text: String,
-    prev_channel_text: String,
-    current_value_text: String,
-    current_suspicious_text: String,
-    current_channel_text: String,
-
     previous_channel_index: usize,
     current_channel_index: usize,
     channel_data: [ChannelInfo; CHANNELS_COUNT],
@@ -139,20 +131,10 @@ impl Sandbox for ChannelBasedApp {
             }
             Message::ButtonPressed(index) => {
                 if self.current_channel_index != INVALID_CHANNEL_INDEX {
-                    let channel_info = &self.channel_data[self.current_channel_index];
-                    self.prev_value_text = channel_info.value_as_text();
-                    self.prev_suspicious_text = channel_info.suspicious_as_text();
-                    self.prev_channel_text = (self.current_channel_index + 1).to_string();
-
                     self.previous_channel_index = self.current_channel_index;
                 }
 
                 self.current_channel_index = index - 1;
-
-                let channel_info = &self.channel_data[self.current_channel_index];
-                self.current_value_text = channel_info.value_as_text();
-                self.current_suspicious_text = channel_info.suspicious_as_text();
-                self.current_channel_text = index.to_string();
             }
             Message::ChangeChannel(change) => {
                 if self.current_channel_index == INVALID_CHANNEL_INDEX {
@@ -160,34 +142,15 @@ impl Sandbox for ChannelBasedApp {
                     return;
                 }
 
-                // Update previous values with current values
-                let channel_info = &self.channel_data[self.current_channel_index];
-                self.prev_value_text = channel_info.value_as_text();
-                self.prev_suspicious_text = channel_info.suspicious_as_text();
-                self.prev_channel_text = (self.current_channel_index + 1).to_string();
-
                 self.previous_channel_index = self.current_channel_index;
                 let new_channel_index =
                     ((self.current_channel_index as i32 + change).rem_euclid(9)) as usize;
                 self.current_channel_index = new_channel_index;
-
-                let channel_info_ = &self.channel_data[self.current_channel_index];
-                self.current_value_text = channel_info_.value_as_text();
-                self.current_suspicious_text = channel_info_.suspicious_as_text();
-                self.current_channel_text = (self.current_channel_index + 1).to_string();
             }
             Message::ClearChannelRow(selected_row) => {
                 if selected_row == ChannelDataRow::Previous {
-                    self.prev_value_text = String::new();
-                    self.prev_suspicious_text = String::new();
-                    self.prev_channel_text = String::new();
-
                     self.previous_channel_index = INVALID_CHANNEL_INDEX;
                 } else if selected_row == ChannelDataRow::Current {
-                    self.current_value_text = String::new();
-                    self.current_suspicious_text = String::new();
-                    self.current_channel_text = String::new();
-
                     self.current_channel_index = INVALID_CHANNEL_INDEX;
                 } else {
                     panic!("Unexpected ChannelDataRow value!!")
@@ -198,20 +161,31 @@ impl Sandbox for ChannelBasedApp {
             }
             Message::ReleasedSuspiciousSlider => {
                 self.update_suspicious();
-
-                if self.previous_channel_index != INVALID_CHANNEL_INDEX {
-                    self.prev_suspicious_text =
-                        self.channel_data[self.previous_channel_index].suspicious_as_text();
-                }
-                if self.current_channel_index != INVALID_CHANNEL_INDEX {
-                    self.current_suspicious_text =
-                        self.channel_data[self.current_channel_index].suspicious_as_text();
-                }
             }
         }
     }
 
     fn view(&self) -> Element<Message> {
+        let mut previous_value_text = String::new();
+        let mut previous_suspicious_text = String::new();
+        let mut previous_channel_text = String::new();
+
+        if self.previous_channel_index != INVALID_CHANNEL_INDEX {
+            previous_value_text = self.channel_data[self.previous_channel_index].value_as_text();
+            previous_suspicious_text =
+                self.channel_data[self.previous_channel_index].suspicious_as_text();
+            previous_channel_text = (self.previous_channel_index + 1).to_string();
+        }
+        let mut current_value_text = String::new();
+        let mut current_suspicious_text = String::new();
+        let mut current_channel_text = String::new();
+
+        if self.current_channel_index != INVALID_CHANNEL_INDEX {
+            current_value_text = self.channel_data[self.current_channel_index].value_as_text();
+            current_suspicious_text =
+                self.channel_data[self.current_channel_index].suspicious_as_text();
+            current_channel_text = (self.current_channel_index + 1).to_string();
+        }
         let table = Row::new()
             .spacing(5)
             .push(
@@ -231,7 +205,7 @@ impl Sandbox for ChannelBasedApp {
                     .push(text("Value").height(Length::FillPortion(1)))
                     .push(
                         Container::new(
-                            text_input("Previous Value", &self.prev_value_text)
+                            text_input("Previous Value", &previous_value_text)
                                 .on_input(move |_| Message::IgnoreInput), // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
@@ -239,7 +213,7 @@ impl Sandbox for ChannelBasedApp {
                     )
                     .push(
                         Container::new(
-                            text_input("Current Value", &self.current_value_text)
+                            text_input("Current Value", &current_value_text)
                                 .on_input(move |_| Message::IgnoreInput), // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
@@ -254,7 +228,7 @@ impl Sandbox for ChannelBasedApp {
                     .push(text("Suspicious").height(Length::FillPortion(1)))
                     .push(
                         Container::new(
-                            text_input("Suspicious?", &self.prev_suspicious_text)
+                            text_input("Suspicious?", &previous_suspicious_text)
                                 .on_input(move |_| Message::IgnoreInput), // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
@@ -262,7 +236,7 @@ impl Sandbox for ChannelBasedApp {
                     )
                     .push(
                         Container::new(
-                            text_input("Suspicious?", &self.current_suspicious_text)
+                            text_input("Suspicious?", &current_suspicious_text)
                                 .on_input(move |_| Message::IgnoreInput), // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
@@ -277,7 +251,7 @@ impl Sandbox for ChannelBasedApp {
                     .push(text("Channel").height(Length::FillPortion(1)))
                     .push(
                         Container::new(
-                            text_input("Channel", &self.prev_channel_text)
+                            text_input("Channel", &previous_channel_text)
                                 .on_input(move |_| Message::IgnoreInput), // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
@@ -285,7 +259,7 @@ impl Sandbox for ChannelBasedApp {
                     )
                     .push(
                         Container::new(
-                            text_input("Channel", &self.current_channel_text)
+                            text_input("Channel", &current_channel_text)
                                 .on_input(move |_| Message::IgnoreInput), // to be in 'enabled' state
                         )
                         .height(Length::FillPortion(2))
