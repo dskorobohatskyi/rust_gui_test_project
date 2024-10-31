@@ -13,7 +13,7 @@
 
 use eframe::egui::{self, Align, CentralPanel, Grid, Layout, TopBottomPanel, Window};
 
-use crate::common::{ApplicationTab, UserInfo};
+use crate::common::ApplicationTab;
 
 pub fn run() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions::default();
@@ -22,6 +22,11 @@ pub fn run() -> Result<(), eframe::Error> {
         options,
         Box::new(|_cc| Ok(Box::new(ImmediateModeApp::default()))),
     )
+}
+
+pub struct UserInfo {
+    pub name: String,
+    pub age: u32,
 }
 
 #[derive(Default)]

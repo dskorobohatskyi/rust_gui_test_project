@@ -3,10 +3,7 @@
 // Useful links:
 // https://iced.rs/
 
-use crate::common::{
-    ApplicationTab, ChannelInfo, BACKUP_CHANNEL_INDEX, CHANNELS_COUNT, HIGH_INTEGER_LIMIT,
-    INVALID_CHANNEL_INDEX, LOW_INTEGER_LIMIT, SUSPICIOUS_LIMIT,
-};
+use crate::common::ApplicationTab;
 
 use iced::{
     widget::{button, slider, text, text_input, Button, Column, Container, Row, Rule, Space},
@@ -17,6 +14,21 @@ use rand::{thread_rng, Rng};
 
 pub fn run() -> iced::Result {
     ChannelBasedApp::run(Settings::default())
+}
+
+//*  Constants */
+pub const CHANNELS_COUNT: usize = 9;
+pub const INVALID_CHANNEL_INDEX: usize = usize::MAX;
+pub const BACKUP_CHANNEL_INDEX: usize = 0;
+
+pub const LOW_INTEGER_LIMIT: u32 = 1;
+pub const HIGH_INTEGER_LIMIT: u32 = 100;
+pub const SUSPICIOUS_LIMIT: u32 = 75;
+
+#[derive(Default)]
+pub struct ChannelInfo {
+    pub integer_value: u32,
+    pub is_suspicious: bool,
 }
 
 trait ChannelInfoUIExt {
